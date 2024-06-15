@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="rhubarb-geek-nz.RegistrationFreeCOM" Version="1.0.0" />
+    <PackageReference Include="rhubarb-geek-nz.RegistrationFreeCOM" Version="1.0.1" />
   </ItemGroup>
 
 </Project>

@@ -11,69 +11,84 @@ static OLECHAR globalModuleFileName[260];
 
 typedef struct CHelloWorldData
 {
-	IHelloWorldVtbl* lpVtbl;
+	IUnknown IUnknown;
+	IHelloWorld IHelloWorld;
 	LONG lUsage;
 	IUnknown* lpOuter;
 	ITypeInfo* piTypeInfo;
 } CHelloWorldData;
 
-static STDMETHODIMP CHelloWorld_IHelloWorld_QueryInterface(IHelloWorld* pThis, REFIID riid, void** ppvObject)
+#define GetBaseObjectPtr(x,y,z)     (x *)(((char *)(void *)z)-(size_t)(char *)(&(((x*)NULL)->y)))
+
+static STDMETHODIMP CHelloWorld_IUnknown_QueryInterface(IUnknown* pThis, REFIID riid, void** ppvObject)
 {
 	HRESULT hr = E_NOINTERFACE;
-	CHelloWorldData* pData = (void*)pThis;
-
-	*ppvObject = NULL;
+	CHelloWorldData* pData = GetBaseObjectPtr(CHelloWorldData,IUnknown,pThis);
 
 	if (IsEqualIID(riid, &IID_IDispatch) || IsEqualIID(riid, &IID_IHelloWorld))
 	{
 		InterlockedIncrement(&pData->lUsage);
 
-		*ppvObject = pThis;
+		*ppvObject = &(pData->IHelloWorld);
 
 		hr = S_OK;
 	}
 	else
 	{
-		if (pData->lpOuter)
+		if (IsEqualIID(riid, &IID_IUnknown))
 		{
-			hr = IUnknown_QueryInterface(pData->lpOuter, riid, ppvObject);
+			InterlockedIncrement(&pData->lUsage);
+
+			*ppvObject = &(pData->IUnknown);
+
+			hr = S_OK;
 		}
 		else
 		{
-			if (IsEqualIID(riid, &IID_IUnknown))
-			{
-				InterlockedIncrement(&pData->lUsage);
-
-				*ppvObject = pThis;
-
-				hr = S_OK;
-			}
+			*ppvObject = NULL;
 		}
 	}
 
 	return hr;
 }
 
-static STDMETHODIMP_(ULONG) CHelloWorld_IHelloWorld_AddRef(IHelloWorld* pThis)
+static STDMETHODIMP_(ULONG) CHelloWorld_IUnknown_AddRef(IUnknown * pThis)
 {
-	CHelloWorldData* pData = (void*)pThis;
+	CHelloWorldData* pData = GetBaseObjectPtr(CHelloWorldData, IUnknown, pThis);
 	return InterlockedIncrement(&pData->lUsage);
 }
 
-static STDMETHODIMP_(ULONG) CHelloWorld_IHelloWorld_Release(IHelloWorld* pThis)
+static STDMETHODIMP_(ULONG) CHelloWorld_IUnknown_Release(IUnknown * pThis)
 {
-	CHelloWorldData* pData = (void*)pThis;
+	CHelloWorldData* pData = GetBaseObjectPtr(CHelloWorldData, IUnknown, pThis);
 	LONG res = InterlockedDecrement(&pData->lUsage);
 
 	if (!res)
 	{
 		if (pData->piTypeInfo) IUnknown_Release(pData->piTypeInfo);
-		if (pData->lpOuter) IUnknown_Release(pData->lpOuter);
 		LocalFree(pData);
 		InterlockedDecrement(&globalUsage);
 	}
 
 	return res;
+}
+
+static STDMETHODIMP CHelloWorld_IHelloWorld_QueryInterface(IHelloWorld* pThis, REFIID riid, void** ppvObject)
+{
+	CHelloWorldData* pData = GetBaseObjectPtr(CHelloWorldData, IHelloWorld, pThis);
+	return IUnknown_QueryInterface(pData->lpOuter, riid, ppvObject);
+}
+
+static STDMETHODIMP_(ULONG) CHelloWorld_IHelloWorld_AddRef(IHelloWorld* pThis)
+{
+	CHelloWorldData* pData = GetBaseObjectPtr(CHelloWorldData, IHelloWorld, pThis);
+	return IUnknown_AddRef(pData->lpOuter);
+}
+
+static STDMETHODIMP_(ULONG) CHelloWorld_IHelloWorld_Release(IHelloWorld* pThis)
+{
+	CHelloWorldData* pData = GetBaseObjectPtr(CHelloWorldData, IHelloWorld, pThis);
+	return IUnknown_Release(pData->lpOuter);
 }
 
 static STDMETHODIMP CHelloWorld_IHelloWorld_GetTypeInfoCount(IHelloWorld* pThis, UINT* pctinfo)
@@ -84,7 +99,7 @@ static STDMETHODIMP CHelloWorld_IHelloWorld_GetTypeInfoCount(IHelloWorld* pThis,
 
 static STDMETHODIMP CHelloWorld_IHelloWorld_GetTypeInfo(IHelloWorld* pThis, UINT iTInfo, LCID lcid, ITypeInfo** ppTInfo)
 {
-	CHelloWorldData* pData = (void*)pThis;
+	CHelloWorldData* pData = GetBaseObjectPtr(CHelloWorldData, IHelloWorld, pThis);
 	if (iTInfo) return DISP_E_BADINDEX;
 	ITypeInfo_AddRef(pData->piTypeInfo);
 	*ppTInfo = pData->piTypeInfo;
@@ -94,7 +109,7 @@ static STDMETHODIMP CHelloWorld_IHelloWorld_GetTypeInfo(IHelloWorld* pThis, UINT
 
 static STDMETHODIMP CHelloWorld_IHelloWorld_GetIDsOfNames(IHelloWorld* pThis, REFIID riid, LPOLESTR* rgszNames, UINT cNames, LCID lcid, DISPID* rgDispId)
 {
-	CHelloWorldData* pData = (void*)pThis;
+	CHelloWorldData* pData = GetBaseObjectPtr(CHelloWorldData, IHelloWorld, pThis);
 
 	if (!IsEqualIID(riid, &IID_NULL))
 	{
@@ -106,7 +121,7 @@ static STDMETHODIMP CHelloWorld_IHelloWorld_GetIDsOfNames(IHelloWorld* pThis, RE
 
 static STDMETHODIMP CHelloWorld_IHelloWorld_Invoke(IHelloWorld* pThis, DISPID dispIdMember, REFIID riid, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr)
 {
-	CHelloWorldData* pData = (void*)pThis;
+	CHelloWorldData* pData = GetBaseObjectPtr(CHelloWorldData, IHelloWorld, pThis);
 
 	if (!IsEqualIID(riid, &IID_NULL))
 	{
@@ -122,6 +137,13 @@ static STDMETHODIMP CHelloWorld_IHelloWorld_GetMessage(IHelloWorld* pThis, int H
 
 	return S_OK;
 }
+
+static IUnknownVtbl CHelloWorld_IUnknownVtbl =
+{
+	CHelloWorld_IUnknown_QueryInterface,
+	CHelloWorld_IUnknown_AddRef,
+	CHelloWorld_IUnknown_Release
+};
 
 static IHelloWorldVtbl CHelloWorld_IHelloWorldVtbl =
 {
@@ -177,28 +199,36 @@ static STDMETHODIMP CClassObject_CHelloWorld_IClassFactory_CreateInstance(IClass
 
 			if (pData)
 			{
-				IUnknown* p = (void*)pData;
-
+				IUnknown* p = &(pData->IUnknown);
 				InterlockedIncrement(&globalUsage);
 
-				pData->lpVtbl = &CHelloWorld_IHelloWorldVtbl;
+				pData->IUnknown.lpVtbl = &CHelloWorld_IUnknownVtbl;
+				pData->IHelloWorld.lpVtbl = &CHelloWorld_IHelloWorldVtbl;
 
 				pData->lUsage = 1;
-				pData->lpOuter = punk;
-
-				if (pData->lpOuter)
-				{
-					IUnknown_AddRef(pData->lpOuter);
-				}
+				pData->lpOuter = punk ? punk : p;
 
 				hr = ITypeLib_GetTypeInfoOfGuid(piTypeLib, &IID_IHelloWorld, &pData->piTypeInfo);
 
 				if (hr >= 0)
 				{
-					hr = IUnknown_QueryInterface(p, riid, ppvObject);
-				}
+					if (punk)
+					{
+						hr = S_OK;
 
-				IUnknown_Release(p);
+						*ppvObject = p;
+					}
+					else
+					{
+						hr = IUnknown_QueryInterface(p, riid, ppvObject);
+
+						IUnknown_Release(p);
+					}
+				}
+				else
+				{
+					IUnknown_Release(p);
+				}
 			}
 
 			if (piTypeLib)
