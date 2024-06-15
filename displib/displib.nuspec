@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>rhubarb-geek-nz.RegistrationFreeCOM</id>
+    <version>1.0.0.0</version>
+    <title>Registration-Free COM demo</title>
+    <authors>Roger Brown</authors>
+    <owners>rhubarb-geek-nz</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <projectUrl>https://github.com/rhubarb-geek-nz/RegistrationFreeCOM</projectUrl>
+    <description>Demonstration of Registration-Free COM</description>
+    <copyright>Copyright © 2024 Roger Brown</copyright>
+    <language>en-US</language>
+    <repository type="git" url="https://github.com/rhubarb-geek-nz/RegistrationFreeCOM" />
+	<readme>README.md</readme>
+  </metadata>
+</package>
