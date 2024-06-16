@@ -1,0 +1,36 @@
+/***********************************
+ * Copyright (c) 2024 Roger Brown.
+ * Licensed under the MIT License.
+ ****/
+
+#include <windows.h>
+
+1 TYPELIB "disptlb.tlb"
+
+1 VERSIONINFO
+	FILEVERSION 1,0,0,0
+	PRODUCTVERSION 1,0,0,0
+	FILEOS VOS__WINDOWS32
+	FILETYPE VFT_DLL
+BEGIN
+	BLOCK "StringFileInfo"
+	BEGIN
+		BLOCK "140904E4"
+		BEGIN
+			VALUE "CompanyName","Roger Brown\000\000"
+			VALUE "LegalCopyright","Copyright © Roger Brown 2024\000\000"
+			VALUE "ProductName","disptlb\000\000"
+			VALUE "ProductVersion", "1.0.0.0\000\000"
+			VALUE "Comments","https://github.com/rhubarb-geek-nz/RegistrationFreeCOM\000\000"
+			VALUE "FileDescription","Hello World Interface Type Library\000\000"
+			VALUE "FileVersion", "1.0.0.0\000\000"
+			VALUE "InternalName","disptlb\000\000"
+			VALUE "OriginalFilename","DISPTLB.DLL\000\000"
+			VALUE "OLESelfRegister", "\0"
+		END
+	END
+	BLOCK "VarFileInfo"
+	BEGIN	
+		VALUE "Translation", 0x1409, 1252
+	END
+END

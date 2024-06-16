@@ -103,7 +103,7 @@ $ARCHLIST | ForEach-Object {
 	$VCVARS = ( '{0}\{1}' -f $VCVARSDIR, $VCVARSARCH[$ARCH] )
 	$EXE = "bin\$ARCH\displib.dll"
 
-	"bin\$ARCH\displib.dll", "bin\$ARCH\dispapp.exe" | ForEach-Object {
+	"bin\$ARCH\disptlb.dll", "bin\$ARCH\displib.dll", "bin\$ARCH\dispapp.exe" | ForEach-Object {
 		$EXE = $_
 
 		$MACHINE = ( @"

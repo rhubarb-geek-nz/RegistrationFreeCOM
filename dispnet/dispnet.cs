@@ -3,8 +3,8 @@
  * Licensed under the MIT License.
  ****/
 
+using RhubarbGeekNzDispLib;
 using System;
-using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace dispnet
@@ -25,9 +25,9 @@ namespace dispnet
 
             Type type = Type.GetTypeFromCLSID(CLSID_CHelloWorld);
 
-            var obj = Activator.CreateInstance(type);
+            IHelloWorld obj = Activator.CreateInstance(type) as IHelloWorld;
 
-            var result = type.InvokeMember("GetMessage", BindingFlags.Public | BindingFlags.Instance | BindingFlags.InvokeMethod, null, obj, new object[] { 1 });
+            var result = obj.GetMessage(1);
 
             Console.WriteLine($"{result}");
 
@@ -40,7 +40,7 @@ namespace dispnet
         [DllImport("ole32.dll", PreserveSig = false)]
         public static extern void CoRegisterClassObject([In] ref Guid rclsid, [MarshalAs(UnmanagedType.IUnknown)] object pUnk, CLSCTX dwClsContext, REGCLS flags, out uint lpdwRegister);
 
-        [DllImport("ole32.dll")]
+        [DllImport("ole32.dll", PreserveSig = false)]
         public static extern void CoRevokeClassObject(uint dwRegister);
             
         [Flags]

@@ -3,7 +3,9 @@
  * Licensed under the MIT License.
  ****/
 
-#include <objbase.h>
+#include<windows.h>
+#undef GetMessage
+#include <displib.h>
 #include <stdio.h>
 
 int main(int argc, char** argv)
@@ -12,9 +14,8 @@ int main(int argc, char** argv)
 
 	if (hr >= 0)
 	{
-		CLSID clsid;
-
 		BSTR app = SysAllocString(L"RhubarbGeekNz.HelloWorld");
+		CLSID clsid;
 
 		hr = CLSIDFromProgID(app, &clsid);
 
@@ -22,58 +23,24 @@ int main(int argc, char** argv)
 
 		if (hr >= 0)
 		{
-			IDispatch* dispatch = NULL;
+			IHelloWorld* helloWorld = NULL;
 
-			hr = CoCreateInstance(clsid, NULL, CLSCTX_INPROC_SERVER, IID_IDispatch, (void**)&dispatch);
+			hr = CoCreateInstance(clsid, NULL, CLSCTX_INPROC_SERVER, IID_IHelloWorld, (void**)&helloWorld);
 
 			if (hr >= 0)
 			{
-				LPOLESTR names[] = {
-					SysAllocString(L"GetMessage")
-				};
-				DISPID dispId[sizeof(names) / sizeof(names[0])];
+				BSTR bstr = NULL;
 
-				hr = dispatch->GetIDsOfNames(IID_NULL, names, sizeof(names) / sizeof(names[0]), LOCALE_USER_DEFAULT, dispId);
-
-				int i = sizeof(names) / sizeof(names[0]);
-
-				while (i--)
-				{
-					SysFreeString(names[i]);
-				}
+				hr = helloWorld->GetMessage(1, &bstr);
 
 				if (hr >= 0)
 				{
-					WORD flags = DISPATCH_METHOD;
-					DISPPARAMS params;
-					VARIANT result;
-					EXCEPINFO ex;
-					UINT argErr = 0;
-					VARIANTARG args[1];
+					printf("%S\n", bstr);
 
-					ZeroMemory(&ex, sizeof(ex));
-					ZeroMemory(&params, sizeof(params));
-
-					VariantInit(args);
-					args[0].vt = VT_I4;
-					args[0].intVal = 1;
-
-					params.cArgs = 1;
-					params.rgvarg = args;
-
-					VariantInit(&result);
-
-					hr = dispatch->Invoke(dispId[0], IID_NULL, LOCALE_USER_DEFAULT, flags, &params, &result, &ex, &argErr);
-
-					if (hr >= 0 && result.vt == VT_BSTR)
-					{
-						printf("%S\n", result.bstrVal);
-					}
-
-					VariantClear(&result);
+					SysFreeString(bstr);
 				}
 
-				dispatch->Release();
+				helloWorld->Release();
 			}
 		}
 
