@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
     <id>rhubarb-geek-nz.RegistrationFreeCOM</id>
-    <version>1.0.1.0</version>
+    <version>1.0.2.0</version>
     <title>Registration-Free COM demo</title>
     <authors>Roger Brown</authors>
     <owners>rhubarb-geek-nz</owners>

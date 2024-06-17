@@ -23,11 +23,11 @@ typedef struct CHelloWorldData
 static STDMETHODIMP CHelloWorld_IUnknown_QueryInterface(IUnknown* pThis, REFIID riid, void** ppvObject)
 {
 	HRESULT hr = E_NOINTERFACE;
-	CHelloWorldData* pData = GetBaseObjectPtr(CHelloWorldData,IUnknown,pThis);
+	CHelloWorldData* pData = GetBaseObjectPtr(CHelloWorldData, IUnknown, pThis);
 
 	if (IsEqualIID(riid, &IID_IDispatch) || IsEqualIID(riid, &IID_IHelloWorld))
 	{
-		InterlockedIncrement(&pData->lUsage);
+		IUnknown_AddRef(pData->lpOuter);
 
 		*ppvObject = &(pData->IHelloWorld);
 
@@ -52,13 +52,13 @@ static STDMETHODIMP CHelloWorld_IUnknown_QueryInterface(IUnknown* pThis, REFIID 
 	return hr;
 }
 
-static STDMETHODIMP_(ULONG) CHelloWorld_IUnknown_AddRef(IUnknown * pThis)
+static STDMETHODIMP_(ULONG) CHelloWorld_IUnknown_AddRef(IUnknown* pThis)
 {
 	CHelloWorldData* pData = GetBaseObjectPtr(CHelloWorldData, IUnknown, pThis);
 	return InterlockedIncrement(&pData->lUsage);
 }
 
-static STDMETHODIMP_(ULONG) CHelloWorld_IUnknown_Release(IUnknown * pThis)
+static STDMETHODIMP_(ULONG) CHelloWorld_IUnknown_Release(IUnknown* pThis)
 {
 	CHelloWorldData* pData = GetBaseObjectPtr(CHelloWorldData, IUnknown, pThis);
 	LONG res = InterlockedDecrement(&pData->lUsage);
@@ -133,7 +133,7 @@ static STDMETHODIMP CHelloWorld_IHelloWorld_Invoke(IHelloWorld* pThis, DISPID di
 
 static STDMETHODIMP CHelloWorld_IHelloWorld_GetMessage(IHelloWorld* pThis, int Hint, BSTR* lpMessage)
 {
-	*lpMessage = SysAllocString(Hint < 0 ? L"Goodbye, Cruel World" :  L"Hello World");
+	*lpMessage = SysAllocString(Hint < 0 ? L"Goodbye, Cruel World" : L"Hello World");
 
 	return S_OK;
 }
