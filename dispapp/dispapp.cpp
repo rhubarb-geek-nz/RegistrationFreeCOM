@@ -12,28 +12,28 @@ int main(int argc, char** argv)
 {
 	HRESULT hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
 
-	if (hr >= 0)
+	if (SUCCEEDED(hr))
 	{
-		BSTR app = SysAllocString(L"RhubarbGeekNz.HelloWorld");
+		BSTR app = SysAllocString(L"RhubarbGeekNz.RegistrationFreeCOM");
 		CLSID clsid;
 
 		hr = CLSIDFromProgID(app, &clsid);
 
 		SysFreeString(app);
 
-		if (hr >= 0)
+		if (SUCCEEDED(hr))
 		{
 			IHelloWorld* helloWorld = NULL;
 
 			hr = CoCreateInstance(clsid, NULL, CLSCTX_INPROC_SERVER, IID_IHelloWorld, (void**)&helloWorld);
 
-			if (hr >= 0)
+			if (SUCCEEDED(hr))
 			{
 				BSTR bstr = NULL;
 
 				hr = helloWorld->GetMessage(1, &bstr);
 
-				if (hr >= 0)
+				if (SUCCEEDED(hr))
 				{
 					printf("%S\n", bstr);
 
@@ -47,7 +47,7 @@ int main(int argc, char** argv)
 		CoUninitialize();
 	}
 
-	if (hr < 0)
+	if (FAILED(hr))
 	{
 		fprintf(stderr, "0x%lx\n", (long)hr);
 	}

@@ -17,7 +17,7 @@ clean:
 	if exist $(BINDIR) rmdir /q /s $(BINDIR)
 
 $(BINDIR)\$(DLLNAME).dll: $(OBJDIR)\$(DLLNAME).obj $(OBJDIR)\$(DLLNAME)_i.obj $(OBJDIR)\$(DLLNAME).res $(DLLNAME).def $(BINDIR)
-	cl /LD /Fe$@ /MT $(OBJDIR)\$(DLLNAME).obj $(OBJDIR)\$(DLLNAME)_i.obj $(OBJDIR)\$(DLLNAME).res oleaut32.lib /link /INCREMENTAL:NO /PDB:NONE /DEF:$(DLLNAME).def /SUBSYSTEM:CONSOLE
+	cl /LD /Fe$@ /MT $(OBJDIR)\$(DLLNAME).obj $(OBJDIR)\$(DLLNAME)_i.obj $(OBJDIR)\$(DLLNAME).res ole32.lib oleaut32.lib /link /INCREMENTAL:NO /PDB:NONE /DEF:$(DLLNAME).def /SUBSYSTEM:CONSOLE
 	if not "$(CertificateThumbprint)"=="" signtool sign /a /sha1 $(CertificateThumbprint) /fd SHA256 /t http://timestamp.digicert.com $@
 
 $(OBJDIR)\$(DLLNAME).obj: $(OBJDIR)\$(DLLNAME).h $(DLLNAME).c

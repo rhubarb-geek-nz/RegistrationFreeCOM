@@ -6,11 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <COMReference Include="RhubarbGeekNzDispLib">
+    <COMReference Include="RhubarbGeekNzRegistrationFreeCOM">
       <WrapperTool>tlbimp</WrapperTool>
       <VersionMinor>0</VersionMinor>
       <VersionMajor>0</VersionMajor>
-      <Guid>0bf2e8d0-41c4-4546-9ef8-85073106ae80</Guid>
+      <Guid>c739a43b-0300-4c57-9300-00e4fc59c40f</Guid>
       <Lcid>0</Lcid>
       <Isolated>false</Isolated>
       <EmbedInteropTypes>true</EmbedInteropTypes>
@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="rhubarb-geek-nz.RegistrationFreeCOM" Version="1.0.1" />
+    <PackageReference Include="rhubarb-geek-nz.RegistrationFreeCOM" Version="1.0.3" />
   </ItemGroup>
 
 </Project>

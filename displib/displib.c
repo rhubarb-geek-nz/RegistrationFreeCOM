@@ -9,6 +9,8 @@ static LONG globalUsage;
 static HMODULE globalModule;
 static OLECHAR globalModuleFileName[260];
 
+static const CLSID CLSID_CHelloWorld = { 0x49ef0168, 0x2765, 0x4932, 0xbe, 0x4c, 0xe2, 0x1e, 0x0d, 0x7a, 0x55, 0x4f };
+
 typedef struct CHelloWorldData
 {
 	IUnknown IUnknown;
@@ -16,6 +18,7 @@ typedef struct CHelloWorldData
 	LONG lUsage;
 	IUnknown* lpOuter;
 	ITypeInfo* piTypeInfo;
+	IUnknown* punkMarshal;
 } CHelloWorldData;
 
 #define GetBaseObjectPtr(x,y,z)     (x *)(((char *)(void *)z)-(size_t)(char *)(&(((x*)NULL)->y)))
@@ -45,7 +48,14 @@ static STDMETHODIMP CHelloWorld_IUnknown_QueryInterface(IUnknown* pThis, REFIID 
 		}
 		else
 		{
-			*ppvObject = NULL;
+			if (pData->punkMarshal && IsEqualIID(riid, &IID_IMarshal))
+			{
+				hr = IUnknown_QueryInterface(pData->punkMarshal, riid, ppvObject);
+			}
+			else
+			{
+				*ppvObject = NULL;
+			}
 		}
 	}
 
@@ -66,6 +76,7 @@ static STDMETHODIMP_(ULONG) CHelloWorld_IUnknown_Release(IUnknown* pThis)
 	if (!res)
 	{
 		if (pData->piTypeInfo) IUnknown_Release(pData->piTypeInfo);
+		if (pData->punkMarshal) IUnknown_Release(pData->punkMarshal);
 		LocalFree(pData);
 		InterlockedDecrement(&globalUsage);
 	}
@@ -193,7 +204,7 @@ static STDMETHODIMP CClassObject_CHelloWorld_IClassFactory_CreateInstance(IClass
 
 		hr = LoadTypeLibEx(globalModuleFileName, REGKIND_NONE, &piTypeLib);
 
-		if (hr >= 0)
+		if (SUCCEEDED(hr))
 		{
 			CHelloWorldData* pData = LocalAlloc(LMEM_ZEROINIT, sizeof(*pData));
 
@@ -210,7 +221,7 @@ static STDMETHODIMP CClassObject_CHelloWorld_IClassFactory_CreateInstance(IClass
 
 				hr = ITypeLib_GetTypeInfoOfGuid(piTypeLib, &IID_IHelloWorld, &pData->piTypeInfo);
 
-				if (hr >= 0)
+				if (SUCCEEDED(hr))
 				{
 					if (punk)
 					{
@@ -220,7 +231,12 @@ static STDMETHODIMP CClassObject_CHelloWorld_IClassFactory_CreateInstance(IClass
 					}
 					else
 					{
-						hr = IUnknown_QueryInterface(p, riid, ppvObject);
+						hr = CoCreateFreeThreadedMarshaler(p, &pData->punkMarshal);
+
+						if (SUCCEEDED(hr))
+						{
+							hr = IUnknown_QueryInterface(p, riid, ppvObject);
+						}
 
 						IUnknown_Release(p);
 					}

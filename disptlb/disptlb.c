@@ -14,7 +14,7 @@ STDAPI DllRegisterServer(void)
 	ITypeLib* piTypeLib = NULL;
 	HRESULT hr = LoadTypeLibEx(globalModuleFileName, REGKIND_REGISTER, &piTypeLib);
 
-	if (hr >= 0)
+	if (SUCCEEDED(hr))
 	{
 		ITypeLib_Release(piTypeLib);
 	}
@@ -27,13 +27,13 @@ STDAPI DllUnregisterServer(void)
 	ITypeLib* piTypeLib = NULL;
 	HRESULT hr = LoadTypeLibEx(globalModuleFileName, REGKIND_NONE, &piTypeLib);
 
-	if (hr >= 0)
+	if (SUCCEEDED(hr))
 	{
 		TLIBATTR* attr = NULL;
 
 		hr = ITypeLib_GetLibAttr(piTypeLib, &attr);
 
-		if (hr >= 0)
+		if (SUCCEEDED(hr))
 		{
 			hr = UnRegisterTypeLib(&(attr->guid), attr->wMajorVerNum, attr->wMinorVerNum, attr->lcid, attr->syskind);
 
