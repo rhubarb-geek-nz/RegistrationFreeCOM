@@ -98,15 +98,12 @@ EXIT %ERRORLEVEL%
 	}
 }
 
-$ARCHLIST | ForEach-Object {
-	$ARCH = $_
-	$VCVARS = ( '{0}\{1}' -f $VCVARSDIR, $VCVARSARCH[$ARCH] )
-	$EXE = "bin\$ARCH\displib.dll"
+$HERE = $PWD
 
-	"bin\$ARCH\disptlb.dll", "bin\$ARCH\displib.dll", "bin\$ARCH\dispapp.exe" | ForEach-Object {
-		$EXE = $_
+Get-ChildItem "$HERE\bin" -Filter 'disp*.*' -Recurse | ForEach-Object {
+	$EXE = $_.FullName
 
-		$MACHINE = ( @"
+	$MACHINE = ( @"
 @CALL "$VCVARS" > NUL:
 IF ERRORLEVEL 1 EXIT %ERRORLEVEL%
 dumpbin /headers $EXE
@@ -114,20 +111,18 @@ IF ERRORLEVEL 1 EXIT %ERRORLEVEL%
 EXIT %ERRORLEVEL%
 "@ | & "$env:COMSPEC" /nologo /Q | Select-String -Pattern " machine " )
 
-		$MACHINE = $MACHINE.ToString().Trim()
+	$MACHINE = $MACHINE.ToString().Trim()
 
-		$MACHINE = $MACHINE.Substring($MACHINE.LastIndexOf(' ')+1)
+	$MACHINE = $MACHINE.Substring($MACHINE.LastIndexOf(' ')+1)
 
-		New-Object PSObject -Property @{
-			Architecture=$ARCH;
-			Executable=$EXE;
-			Machine=$MACHINE;
-			FileVersion=(Get-Item $EXE).VersionInfo.FileVersion;
-			ProductVersion=(Get-Item $EXE).VersionInfo.ProductVersion;
-			FileDescription=(Get-Item $EXE).VersionInfo.FileDescription
-		}
+	New-Object PSObject -Property @{
+		Executable=$EXE;
+		Machine=$MACHINE;
+		FileVersion=(Get-Item $EXE).VersionInfo.FileVersion;
+		ProductVersion=(Get-Item $EXE).VersionInfo.ProductVersion;
+		FileDescription=(Get-Item $EXE).VersionInfo.FileDescription
 	}
-} | Format-Table -Property Architecture, Executable, Machine, FileVersion, ProductVersion, FileDescription
+} | Format-Table -Property Executable, Machine, FileVersion, ProductVersion, FileDescription
 
 $null = New-Item -Path '.' -Name 'base' -ItemType 'directory'
 
@@ -147,7 +142,13 @@ try
 
 	Copy-Item 'README.md' 'base\README.md'
 
-	& nuget pack 'displib\displib.nuspec' -BasePath 'base'
+	$Null = New-Item -Path 'base' -Name 'lib' -ItemType 'directory'
+
+	$Null = New-Item -Path 'base\lib' -Name 'netstandard2.1' -ItemType 'directory'
+
+	Copy-Item 'bin\x86\disptlb.dll' 'base\lib\netstandard2.1\disptlb.dll'
+
+	& nuget pack 'disptlb\disptlb.nuspec' -BasePath 'base'
 
 	If ( $LastExitCode -ne 0 )
 	{

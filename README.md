@@ -10,9 +10,7 @@ Demonstration of Registration-Free COM object.
 
 [dispapp.manifest](dispapp/dispapp.manifest) provides the side-by-side assembly binding.
 
-[displib.nuspec](displib/displib.nuspec) is used for `NuGet` packaging of the dlls.
-
-[disptlb.idl](disptlb/disptlb.idl) defines the interface for registering during development.
+[disptlb.nuspec](disptlb/disptlb.nuspec) is used for `NuGet` packaging of the dlls.
 
 [dispnet.cs](dispnet/dispnet.cs) demonstrates using [System.Activator.CreateInstance](https://learn.microsoft.com/en-us/dotnet/api/system.activator.createinstance) to create the instance.
 

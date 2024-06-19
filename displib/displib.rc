@@ -8,8 +8,8 @@
 1 TYPELIB "displib.tlb"
 
 1 VERSIONINFO
-	FILEVERSION 1,0,3,0
-	PRODUCTVERSION 1,0,3,0
+	FILEVERSION 1,0,4,0
+	PRODUCTVERSION 1,0,4,0
 	FILEOS VOS__WINDOWS32
 	FILETYPE VFT_DLL
 BEGIN
@@ -20,10 +20,10 @@ BEGIN
 			VALUE "CompanyName","Roger Brown\000\000"
 			VALUE "LegalCopyright","Copyright © Roger Brown 2024\000\000"
 			VALUE "ProductName","displib\000\000"
-			VALUE "ProductVersion", "1.0.3.0\000\000"
+			VALUE "ProductVersion", "1.0.4.0\000\000"
 			VALUE "Comments","https://github.com/rhubarb-geek-nz/RegistrationFreeCOM\000\000"
 			VALUE "FileDescription","Dual-Interface Hello World Component\000\000"
-			VALUE "FileVersion", "1.0.3.0\000\000"
+			VALUE "FileVersion", "1.0.4.0\000\000"
 			VALUE "InternalName","displib\000\000"
 			VALUE "OriginalFilename","DISPLIB.DLL\000\000"
 		END

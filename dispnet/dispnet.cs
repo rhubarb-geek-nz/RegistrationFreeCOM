@@ -3,7 +3,7 @@
  * Licensed under the MIT License.
  ****/
 
-using RhubarbGeekNzRegistrationFreeCOM;
+using RhubarbGeekNz.RegistrationFreeCOM;
 using System;
 using System.Runtime.InteropServices;
 
