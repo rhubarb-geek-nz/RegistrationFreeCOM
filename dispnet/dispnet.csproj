@@ -3,10 +3,18 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0-windows</TargetFramework>
+    <ApplicationManifest>dispnet.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="rhubarb-geek-nz.RegistrationFreeCOM" Version="1.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="displib.manifest">
+      <Link>RhubarbGeekNz.RegistrationFreeCOM.displib.manifest</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
