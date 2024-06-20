@@ -15,3 +15,5 @@ Demonstration of Registration-Free COM object.
 [dispnet.cs](dispnet/dispnet.cs) demonstrates using [System.Activator.CreateInstance](https://learn.microsoft.com/en-us/dotnet/api/system.activator.createinstance) to create the instance.
 
 [package.ps1](package.ps1) is used to automate the building of multiple architectures and create the `NuGet` package.
+
+[dispps1.cs](dispps1/dispps1.cs) demonstration of loading COM object into a PowerShell cmdlet.
