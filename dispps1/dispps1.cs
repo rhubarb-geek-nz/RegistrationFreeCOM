@@ -5,7 +5,7 @@ using System;
 using System.Management.Automation;
 using System.Runtime.InteropServices;
 
-namespace RhubarbGeekNz.RegistrationFreeCOM
+namespace RhubarbGeekNzRegistrationFreeCOM
 {
     public class displib : IModuleAssemblyInitializer, IModuleAssemblyCleanup
     {
