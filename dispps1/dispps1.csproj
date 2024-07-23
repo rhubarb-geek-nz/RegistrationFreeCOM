@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>dispps1</AssemblyName>
     <Copyright>Copyright © 2024 Roger Brown</Copyright>
-    <Version>1.0.4</Version>
+    <Version>1.0.5</Version>
     <AssemblyTitle>Registration-Free COM Demo</AssemblyTitle>
     <Product>RegistrationFreeCOM for PowerShell</Product>
     <Company>rhubarb-geek-nz</Company>
