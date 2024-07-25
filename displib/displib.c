@@ -9,8 +9,6 @@ static LONG globalUsage;
 static HMODULE globalModule;
 static OLECHAR globalModuleFileName[260];
 
-static const CLSID CLSID_CHelloWorld = { 0x49ef0168, 0x2765, 0x4932, 0xbe, 0x4c, 0xe2, 0x1e, 0x0d, 0x7a, 0x55, 0x4f };
-
 typedef struct CHelloWorldData
 {
 	IUnknown IUnknown;

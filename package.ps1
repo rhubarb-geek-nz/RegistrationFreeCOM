@@ -100,7 +100,7 @@ EXIT %ERRORLEVEL%
 
 $HERE = $PWD
 
-Get-ChildItem "$HERE\bin" -Filter 'disp*.*' -Recurse | ForEach-Object {
+Get-ChildItem "$HERE\bin" -File -Recurse | ForEach-Object {
 	$EXE = $_.FullName
 
 	$MACHINE = ( @"
@@ -132,7 +132,6 @@ try
 
 	foreach ($ARCH in $ARCHLIST)
 	{
-
 		$null = New-Item -Path 'base\runtimes' -Name "win-$ARCH" -ItemType 'directory'
 
 		$null = New-Item -Path "base\runtimes\win-$ARCH" -Name 'native' -ItemType 'directory'
@@ -146,7 +145,7 @@ try
 
 	$Null = New-Item -Path 'base\lib' -Name 'netstandard2.1' -ItemType 'directory'
 
-	Copy-Item 'bin\x86\disptlb.dll' 'base\lib\netstandard2.1\disptlb.dll'
+	Copy-Item 'bin\x86\RhubarbGeekNzRegistrationFreeCOM.dll' 'base\lib\netstandard2.1\RhubarbGeekNzRegistrationFreeCOM.dll'
 
 	& nuget pack 'disptlb\disptlb.nuspec' -BasePath 'base'
 

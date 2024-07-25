@@ -23,5 +23,9 @@ interface IHelloWorld : IDispatch
 library RhubarbGeekNzRegistrationFreeCOM
 {
 	importlib("stdole32.tlb");
-	interface IHelloWorld;
+	[uuid(49ef0168-2765-4932-be4c-e21e0d7a554f),helpstring("CHelloWorld class")]
+	coclass CHelloWorld
+	{
+		[default] interface IHelloWorld;
+	};
 }

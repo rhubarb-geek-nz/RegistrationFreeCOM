@@ -11,7 +11,7 @@ namespace RhubarbGeekNzRegistrationFreeCOM
     {
         static void Main(string[] args)
         {
-            IHelloWorld helloWorld = Activator.CreateInstance(Type.GetTypeFromProgID("RhubarbGeekNz.RegistrationFreeCOM", true)) as IHelloWorld;
+            IHelloWorld helloWorld = new CHelloWorld();
 
             Console.WriteLine($"{helloWorld.GetMessage(1)}");
         }
