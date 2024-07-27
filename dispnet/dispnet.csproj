@@ -4,6 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFrameworks>net481;net6.0-windows</TargetFrameworks>
     <ApplicationManifest>dispnet.manifest</ApplicationManifest>
+    <Platforms>x64;x86;arm64;arm</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,6 +14,30 @@
   <ItemGroup>
     <None Include="displib.manifest">
       <Link>RhubarbGeekNz.RegistrationFreeCOM.displib.manifest</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(Platform)' == 'x64' ">
+    <None Include="..\bin\x64\displib.dll" Link="displib.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(Platform)' == 'x86' ">
+    <None Include="..\bin\x86\displib.dll" Link="displib.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(Platform)' == 'arm64' ">
+    <None Include="..\bin\arm64\displib.dll" Link="displib.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(Platform)' == 'arm' ">
+    <None Include="..\bin\arm\displib.dll" Link="displib.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
