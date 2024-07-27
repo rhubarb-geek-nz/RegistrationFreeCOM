@@ -2,6 +2,8 @@
 
 Demonstration of Registration-Free COM object.
 
+The goal is to use CoCreateInstance without updating the registry.
+
 [displib.idl](displib/displib.idl) defines the dual-interface for a simple inprocess server.
 
 [displib.c](displib/displib.c) implements the interface.
@@ -12,8 +14,8 @@ Demonstration of Registration-Free COM object.
 
 [disptlb.nuspec](disptlb/disptlb.nuspec) is used for `NuGet` packaging of the dlls.
 
-[dispnet.cs](dispnet/dispnet.cs) demonstrates using [System.Activator.CreateInstance](https://learn.microsoft.com/en-us/dotnet/api/system.activator.createinstance) to create the instance.
+[dispnet.cs](dispnet/dispnet.cs) demonstrates using a `tlbimp` generated library to create the instance.
 
 [package.ps1](package.ps1) is used to automate the building of multiple architectures and create the `NuGet` package.
 
-[dispps1.cs](dispps1/dispps1.cs) demonstration of loading COM object into a PowerShell cmdlet.
+[dispps1.cs](dispps1/dispps1.cs) demonstration of loading a COM object into a PowerShell cmdlet.

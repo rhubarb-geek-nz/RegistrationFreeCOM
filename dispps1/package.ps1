@@ -48,18 +48,11 @@ New-ModuleManifest @moduleSettings
 
 Import-PowerShellDataFile -LiteralPath "$OutDir$ModuleId.psd1" | Export-PowerShellDataFile | Set-Content -LiteralPath "$PublishDir$ModuleId.psd1" -Encoding utf8BOM
 
-$NuGetRuntimePath = "$HOME\.nuget\packages\rhubarb-geek-nz.registrationfreecom\$Version\runtimes"
-
-Get-ChildItem -LiteralPath $NuGetRuntimePath | ForEach-Object {
-	$platformDir = $_.Name
+Get-ChildItem ..\bin -Filter 'displib.dll' -Recurse | ForEach-Object {
+	$platformDir = 'win-' + $_.Directory.Name
 	$platformPath = $_.FullName
-
-	if (Test-Path -LiteralPath "$PublishDir\$platformDir")
-	{
-		Remove-Item -LiteralPath "$PublishDir\$platformDir" -Recurse
-	}
 
 	$null = New-Item $PublishDir -Name $platformDir -ItemType 'Directory'
 
-	Copy-Item "$platformPath\native\*" "$PublishDir$platformDir\"
+	Copy-Item $platformPath "$PublishDir$platformDir\"
 }

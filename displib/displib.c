@@ -142,9 +142,61 @@ static STDMETHODIMP CHelloWorld_IHelloWorld_Invoke(IHelloWorld* pThis, DISPID di
 
 static STDMETHODIMP CHelloWorld_IHelloWorld_GetMessage(IHelloWorld* pThis, int Hint, BSTR* lpMessage)
 {
-	*lpMessage = SysAllocString(Hint < 0 ? L"Goodbye, Cruel World" : L"Hello World");
+	LPCOLESTR message = NULL;
+	OLECHAR buffer[256];
+	DWORD dw = (sizeof(buffer) / sizeof(buffer[0])) - 1;
+	HRESULT hr = S_FALSE;
 
-	return S_OK;
+	if (SUCCEEDED(hr))
+	{
+		switch (Hint)
+		{
+		case -1:
+			message = L"Goodbye, Cruel World";
+			hr = S_OK;
+			break;
+
+		case 1:
+			message = L"Hello World";
+			hr = S_OK;
+			break;
+
+		case 2:
+			if (GetUserNameW(buffer, &dw))
+			{
+				message = buffer;
+				hr = S_OK;
+			}
+			break;
+
+		case 3:
+			if (GetComputerNameW(buffer, &dw))
+			{
+				message = buffer;
+				hr = S_OK;
+			}
+			break;
+
+		case 4:
+			message = globalModuleFileName;
+			hr = S_OK;
+			break;
+
+		case 5:
+			if (GetModuleFileNameW(NULL, buffer, sizeof(buffer) / sizeof(buffer[0])))
+			{
+				message = buffer;
+				hr = S_OK;
+			}
+			break;
+		}
+
+		*lpMessage = message ? SysAllocString(message) : NULL;
+
+		hr = message ? S_OK : S_FALSE;
+	}
+
+	return hr;
 }
 
 static IUnknownVtbl CHelloWorld_IUnknownVtbl =

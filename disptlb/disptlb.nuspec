@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
     <id>rhubarb-geek-nz.RegistrationFreeCOM</id>
-    <version>1.0.6.0</version>
+    <version>1.0.7.0</version>
     <title>Registration-Free COM demo</title>
     <authors>Roger Brown</authors>
     <owners>rhubarb-geek-nz</owners>
@@ -14,7 +14,7 @@
     <repository type="git" url="https://github.com/rhubarb-geek-nz/RegistrationFreeCOM" />
 	<readme>README.md</readme>
 	<dependencies>
-		<group targetFramework=".NETStandard2.1" />
+		<group targetFramework=".NETStandard2.0" />
 	</dependencies>
   </metadata>
 </package>

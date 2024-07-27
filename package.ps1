@@ -98,9 +98,10 @@ EXIT %ERRORLEVEL%
 	}
 }
 
-$HERE = $PWD
+[string]$HERE = $PWD
+[int]$HERELEN = $HERE.Length + 1
 
-Get-ChildItem "$HERE\bin" -File -Recurse | ForEach-Object {
+Get-ChildItem "$HERE\bin", "$HERE\disptlb\bin" -File -Recurse | ForEach-Object {
 	$EXE = $_.FullName
 
 	$MACHINE = ( @"
@@ -116,7 +117,7 @@ EXIT %ERRORLEVEL%
 	$MACHINE = $MACHINE.Substring($MACHINE.LastIndexOf(' ')+1)
 
 	New-Object PSObject -Property @{
-		Executable=$EXE;
+		Executable=$EXE.SubString($HERELEN);
 		Machine=$MACHINE;
 		FileVersion=(Get-Item $EXE).VersionInfo.FileVersion;
 		ProductVersion=(Get-Item $EXE).VersionInfo.ProductVersion;
@@ -128,24 +129,13 @@ $null = New-Item -Path '.' -Name 'base' -ItemType 'directory'
 
 try
 {
-	$null = New-Item -Path 'base' -Name 'runtimes' -ItemType 'directory'
-
-	foreach ($ARCH in $ARCHLIST)
-	{
-		$null = New-Item -Path 'base\runtimes' -Name "win-$ARCH" -ItemType 'directory'
-
-		$null = New-Item -Path "base\runtimes\win-$ARCH" -Name 'native' -ItemType 'directory'
-
-		Copy-Item "bin\$ARCH\displib.dll" "base\runtimes\win-$ARCH\native\displib.dll"
-	}
-
 	Copy-Item 'README.md' 'base\README.md'
 
 	$Null = New-Item -Path 'base' -Name 'lib' -ItemType 'directory'
 
-	$Null = New-Item -Path 'base\lib' -Name 'netstandard2.1' -ItemType 'directory'
+	$Null = New-Item -Path 'base\lib' -Name 'netstandard2.0' -ItemType 'directory'
 
-	Copy-Item 'bin\x86\RhubarbGeekNzRegistrationFreeCOM.dll' 'base\lib\netstandard2.1\RhubarbGeekNzRegistrationFreeCOM.dll'
+	Copy-Item 'disptlb\bin\x86\RhubarbGeekNzRegistrationFreeCOM.dll' 'base\lib\netstandard2.0\RhubarbGeekNzRegistrationFreeCOM.dll'
 
 	& nuget pack 'disptlb\disptlb.nuspec' -BasePath 'base'
 
@@ -157,4 +147,24 @@ try
 finally
 {
 	Remove-Item 'base' -Recurse
+}
+
+$Version = (Get-Item bin\x64\displib.dll).VersionInfo.ProductVersion
+$PackageId = 'rhubarb-geek-nz.RegistrationFreeCOM'
+$PackageZip = "$PackageId.$Version.zip"
+
+if (Test-Path -LiteralPath $PackageZip)
+{
+	Remove-Item -LiteralPath $PackageZip
+}
+
+Push-Location 'bin'
+
+try
+{
+	Compress-Archive -LiteralPath $ARCHLIST -DestinationPath "..\$PackageZip"
+}
+finally
+{
+	Pop-Location
 }

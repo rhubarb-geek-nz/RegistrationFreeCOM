@@ -2,6 +2,9 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
 using System.Management.Automation;
 using System.Runtime.InteropServices;
 
@@ -9,20 +12,56 @@ namespace RhubarbGeekNzRegistrationFreeCOM
 {
     public class displib : IModuleAssemblyInitializer, IModuleAssemblyCleanup
     {
-        internal static Guid CLSID_CHelloWorld = Guid.Parse("49ef0168-2765-4932-be4c-e21e0d7a554f");
-        private static Guid IID_IUnknown = Guid.Parse("00000000-0000-0000-C000-000000000046");
         private static uint dwRegisterClass;
         private static bool isRegistered;
+        private static IntPtr hModule = IntPtr.Zero;
+        private static readonly Dictionary<Architecture, string> archDirectories = new Dictionary<Architecture, string>(){
+            {Architecture.Arm, "win-arm"},
+            {Architecture.Arm64, "win-arm64"},
+            {Architecture.X86, "win-x86"},
+            {Architecture.X64, "win-x64"}
+        };
 
         public void OnImport()
         {
-            object classObject;
+            if (hModule == IntPtr.Zero)
+            {
+                string archDir;
 
-            DllGetClassObject(ref CLSID_CHelloWorld, ref IID_IUnknown, out classObject);
+                if (archDirectories.TryGetValue(RuntimeInformation.ProcessArchitecture, out archDir))
+                {
+                    string dllName = GetType().Assembly.Location;
+                    string dirName = Path.GetDirectoryName(dllName);
+                    string path = String.Join(Path.DirectorySeparatorChar.ToString(), new string[] { dirName, archDir, "displib.dll" });
 
-            CoRegisterClassObject(ref CLSID_CHelloWorld, classObject, CLSCTX.CLSCTX_INPROC_SERVER, REGCLS.REGCLS_MULTIPLEUSE, out dwRegisterClass);
+                    hModule = CoLoadLibrary(path, 0);
 
-            isRegistered = true;
+                    if (hModule == IntPtr.Zero)
+                    {
+                        throw new Win32Exception(Marshal.GetLastWin32Error(), $"Failed to load {path}");
+                    }
+                }
+            }
+
+            if (!isRegistered && hModule != IntPtr.Zero)
+            {
+                IntPtr intPtr = GetProcAddress(hModule, "DllGetClassObject");
+
+                if (intPtr != IntPtr.Zero)
+                {
+                    Guid CLSID_CHelloWorld = new Guid("49ef0168-2765-4932-be4c-e21e0d7a554f");
+                    Guid IID_IUnknown = new Guid("00000000-0000-0000-C000-000000000046");
+                    object classObject;
+
+                    DllGetClassObjectDelegate dllGetClassObjectDelegate = Marshal.GetDelegateForFunctionPointer(intPtr, typeof(DllGetClassObjectDelegate)) as DllGetClassObjectDelegate;
+
+                    Marshal.ThrowExceptionForHR(dllGetClassObjectDelegate(CLSID_CHelloWorld, IID_IUnknown, out classObject));
+
+                    CoRegisterClassObject(ref CLSID_CHelloWorld, classObject, CLSCTX.CLSCTX_INPROC_SERVER, REGCLS.REGCLS_MULTIPLEUSE, out dwRegisterClass);
+
+                    isRegistered = true;
+                }
+            }
         }
 
         public void OnRemove(PSModuleInfo psModuleInfo)
@@ -33,31 +72,55 @@ namespace RhubarbGeekNzRegistrationFreeCOM
 
                 CoRevokeClassObject(dwRegisterClass);
             }
+
+            IntPtr hInstance = hModule;
+            hModule = IntPtr.Zero;
+
+            if (hInstance != IntPtr.Zero)
+            {
+                CoFreeLibrary(hInstance);
+            }
         }
 
-        [DllImport("displib", PreserveSig = false)]
-        static extern void DllGetClassObject([In] ref Guid rclsid, [In] ref Guid riid, [MarshalAs(UnmanagedType.Interface)][Out] out object ppv);
+        [DllImport("ole32.dll", PreserveSig = false)]
+        private static extern void CoRegisterClassObject([In] ref Guid rclsid, [MarshalAs(UnmanagedType.IUnknown)] object pUnk, CLSCTX dwClsContext, REGCLS flags, out uint lpdwRegister);
 
         [DllImport("ole32.dll", PreserveSig = false)]
-        static extern void CoRegisterClassObject([In] ref Guid rclsid, [MarshalAs(UnmanagedType.IUnknown)] object pUnk, CLSCTX dwClsContext, REGCLS flags, out uint lpdwRegister);
-
-        [DllImport("ole32.dll", PreserveSig = false)]
-        static extern void CoRevokeClassObject(uint dwRegister);
+        private static extern void CoRevokeClassObject(uint dwRegister);
 
         [Flags]
         enum CLSCTX : uint { CLSCTX_INPROC_SERVER = 1 }
 
         [Flags]
         enum REGCLS : uint { REGCLS_MULTIPLEUSE = 1 }
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        public delegate int DllGetClassObjectDelegate(
+            [MarshalAs(UnmanagedType.LPStruct)]
+    Guid rclsid,
+            [MarshalAs(UnmanagedType.LPStruct)]
+    Guid riid,
+            [MarshalAs(UnmanagedType.IUnknown, IidParameterIndex=1)]
+    out object ppv
+        );
+
+        [DllImport("ole32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        private static extern IntPtr CoLoadLibrary(string lpszLibName, uint dwFlags);
+
+        [DllImport("ole32.dll", SetLastError = true)]
+        private static extern int CoFreeLibrary(IntPtr hModule);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Ansi)]
+        private static extern IntPtr GetProcAddress(IntPtr hModule, string lpProcName);
     }
 
     [Cmdlet(VerbsCommon.New, "RegistrationFreeCOM")]
-    [OutputType(typeof(object))]
+    [OutputType(typeof(IHelloWorld))]
     sealed public class NewRegistrationFreeCOM : PSCmdlet
     {
         protected override void ProcessRecord()
         {
-            WriteObject(Activator.CreateInstance(Type.GetTypeFromCLSID(displib.CLSID_CHelloWorld)));
+            WriteObject(new CHelloWorld());
         }
     }
 
@@ -70,7 +133,7 @@ namespace RhubarbGeekNzRegistrationFreeCOM
 
         protected override void ProcessRecord()
         {
-            WriteObject((Activator.CreateInstance(Type.GetTypeFromCLSID(displib.CLSID_CHelloWorld)) as IHelloWorld).GetMessage(Hint));
+            WriteObject(new CHelloWorld().GetMessage(Hint));
         }
     }
 }
