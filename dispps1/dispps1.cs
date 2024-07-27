@@ -97,11 +97,11 @@ namespace RhubarbGeekNzRegistrationFreeCOM
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate int DllGetClassObjectDelegate(
             [MarshalAs(UnmanagedType.LPStruct)]
-    Guid rclsid,
+            Guid rclsid,
             [MarshalAs(UnmanagedType.LPStruct)]
-    Guid riid,
+            Guid riid,
             [MarshalAs(UnmanagedType.IUnknown, IidParameterIndex=1)]
-    out object ppv
+            out object ppv
         );
 
         [DllImport("ole32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
