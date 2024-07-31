@@ -16,12 +16,20 @@
     <RepositoryUrl>https://github.com/rhubarb-geek-nz/RegistrationFreeCOM.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <CertificateThumbprint>601A8B683F791E51F647D34AD102C38DA4DDB65F</CertificateThumbprint>
+    <ApplicationManifest>dispps1.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="PowerShellStandard.Library" Version="5.1.1">
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="displib.manifest">
+      <Link>RhubarbGeekNz.RegistrationFreeCOM.displib.manifest</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>

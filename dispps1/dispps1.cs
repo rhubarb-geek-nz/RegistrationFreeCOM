@@ -5,16 +5,17 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Management.Automation;
 using System.Runtime.InteropServices;
+using System.Xml;
 
 namespace RhubarbGeekNzRegistrationFreeCOM
 {
     public class displib : IModuleAssemblyInitializer, IModuleAssemblyCleanup
     {
-        private static uint dwRegisterClass;
-        private static bool isRegistered;
-        private static IntPtr hModule = IntPtr.Zero;
+        private readonly static string xmlns = "urn:schemas-microsoft-com:asm.v1";
+        private readonly static Dictionary<IntPtr, List<uint>> registrations = new Dictionary<IntPtr, List<uint>>();
         private static readonly Dictionary<Architecture, string> archDirectories = new Dictionary<Architecture, string>(){
             {Architecture.Arm, "win-arm"},
             {Architecture.Arm64, "win-arm64"},
@@ -24,61 +25,104 @@ namespace RhubarbGeekNzRegistrationFreeCOM
 
         public void OnImport()
         {
-            if (hModule == IntPtr.Zero)
+            Guid IID_IUnknown = new Guid("00000000-0000-0000-C000-000000000046");
+            var GetHINSTANCE = typeof(Marshal).GetMethod("GetHINSTANCE");
+
+            foreach (var m in typeof(displib).Assembly.GetLoadedModules())
             {
-                string archDir;
-
-                if (archDirectories.TryGetValue(RuntimeInformation.ProcessArchitecture, out archDir))
+                IntPtr hInstance = (IntPtr)GetHINSTANCE.Invoke(null, new object[] { m });
+                IntPtr hResource = FindResource(hInstance, (IntPtr)2, (IntPtr)24);
+                int dwSize = SizeofResource(hInstance, hResource);
+                IntPtr ptr = LoadResource(hInstance, hResource);
+                byte[] data = new byte[dwSize];
+                Marshal.Copy(ptr, data, 0, dwSize);
+                var stream = new MemoryStream(data);
+                XmlDocument document = new XmlDocument();
+                document.Load(stream);
+                NameTable nt = new NameTable();
+                XmlNamespaceManager nsmgr = new XmlNamespaceManager(nt);
+                nsmgr.AddNamespace("m", xmlns);
+                var list = document.SelectNodes("/m:assembly/m:dependency/m:dependentAssembly/m:assemblyIdentity", nsmgr);
+                foreach (XmlNode node in list)
                 {
-                    string dllName = GetType().Assembly.Location;
-                    string dirName = Path.GetDirectoryName(dllName);
-                    string path = String.Join(Path.DirectorySeparatorChar.ToString(), new string[] { dirName, archDir, "displib.dll" });
+                    string name = node.Attributes["name"].Value;
+                    string version = node.Attributes["version"].Value;
+                    string type = node.Attributes["type"].Value;
 
-                    hModule = CoLoadLibrary(path, 0);
-
-                    if (hModule == IntPtr.Zero)
+                    if ("win32".Equals(type) && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                     {
-                        throw new Win32Exception(Marshal.GetLastWin32Error(), $"Failed to load {path}");
+                        string moduleDir = Path.GetDirectoryName(m.FullyQualifiedName);
+                        string manifestPath = Path.Combine(moduleDir, name + ".manifest");
+                        XmlDocument doc = new XmlDocument();
+
+                        using (var fs = File.OpenRead(manifestPath))
+                        {
+                            doc.Load(fs);
+                        }
+
+                        var identity = doc.SelectSingleNode("/m:assembly/m:assemblyIdentity", nsmgr);
+
+                        string identityName = identity.Attributes["name"].Value;
+                        string identityVersion = identity.Attributes["version"].Value;
+
+                        if (name.Equals(identityName) && version.Equals(identityVersion))
+                        {
+                            var files = doc.SelectNodes("/m:assembly/m:file", nsmgr);
+
+                            foreach (XmlNode file in files)
+                            {
+                                string dllname = file.Attributes["name"].Value;
+                                string arch = RuntimeInformation.ProcessArchitecture.ToString().ToLower();
+                                string path = String.Join(Path.DirectorySeparatorChar.ToString(), new string[] { moduleDir, "win-" + arch, dllname });
+                                IntPtr hModule = CoLoadLibrary(path, 0);
+                                List<uint> registeredClasses = new List<uint>();
+
+                                if (hModule == IntPtr.Zero)
+                                {
+                                    throw new Win32Exception(Marshal.GetLastWin32Error(), $"Failed to load {path}");
+                                }
+
+                                IntPtr intPtr = GetProcAddress(hModule, "DllGetClassObject");
+                                DllGetClassObjectDelegate dllGetClassObjectDelegate = Marshal.GetDelegateForFunctionPointer(intPtr, typeof(DllGetClassObjectDelegate)) as DllGetClassObjectDelegate;
+
+                                var classes = file.SelectNodes("m:comClass", nsmgr);
+
+                                foreach (XmlNode classesNode in classes)
+                                {
+                                    Guid clsid = new Guid(classesNode.Attributes["clsid"].Value);
+                                    object classObject;
+
+                                    Marshal.ThrowExceptionForHR(dllGetClassObjectDelegate(clsid, IID_IUnknown, out classObject));
+
+                                    uint dwRegisterClass;
+                                    CoRegisterClassObject(ref clsid, classObject, CLSCTX.CLSCTX_INPROC_SERVER, REGCLS.REGCLS_MULTIPLEUSE, out dwRegisterClass);
+
+                                    registeredClasses.Add(dwRegisterClass);
+                                }
+
+                                registrations.Add(hModule, registeredClasses);
+                            }
+                        }
                     }
-                }
-            }
-
-            if (!isRegistered && hModule != IntPtr.Zero)
-            {
-                IntPtr intPtr = GetProcAddress(hModule, "DllGetClassObject");
-
-                if (intPtr != IntPtr.Zero)
-                {
-                    Guid CLSID_CHelloWorld = new Guid("49ef0168-2765-4932-be4c-e21e0d7a554f");
-                    Guid IID_IUnknown = new Guid("00000000-0000-0000-C000-000000000046");
-                    object classObject;
-
-                    DllGetClassObjectDelegate dllGetClassObjectDelegate = Marshal.GetDelegateForFunctionPointer(intPtr, typeof(DllGetClassObjectDelegate)) as DllGetClassObjectDelegate;
-
-                    Marshal.ThrowExceptionForHR(dllGetClassObjectDelegate(CLSID_CHelloWorld, IID_IUnknown, out classObject));
-
-                    CoRegisterClassObject(ref CLSID_CHelloWorld, classObject, CLSCTX.CLSCTX_INPROC_SERVER, REGCLS.REGCLS_MULTIPLEUSE, out dwRegisterClass);
-
-                    isRegistered = true;
                 }
             }
         }
 
         public void OnRemove(PSModuleInfo psModuleInfo)
         {
-            if (isRegistered)
+            IntPtr[] modules = registrations.Keys.ToArray();
+
+            foreach (IntPtr hModule in modules)
             {
-                isRegistered = false;
+                var list = registrations[hModule];
+                registrations.Remove(hModule);
 
-                CoRevokeClassObject(dwRegisterClass);
-            }
+                foreach (var dwRegisterClass in list)
+                {
+                    CoRevokeClassObject(dwRegisterClass);
+                }
 
-            IntPtr hInstance = hModule;
-            hModule = IntPtr.Zero;
-
-            if (hInstance != IntPtr.Zero)
-            {
-                CoFreeLibrary(hInstance);
+                CoFreeLibrary(hModule);
             }
         }
 
@@ -112,6 +156,15 @@ namespace RhubarbGeekNzRegistrationFreeCOM
 
         [DllImport("kernel32.dll", CharSet = CharSet.Ansi)]
         private static extern IntPtr GetProcAddress(IntPtr hModule, string lpProcName);
+
+        [DllImport("kernel32.dll")]
+        static extern IntPtr FindResource(IntPtr hModule, IntPtr lpType, IntPtr lpName);
+
+        [DllImport("kernel32.dll")]
+        static extern int SizeofResource(IntPtr hModule, IntPtr hResource);
+
+        [DllImport("kernel32.dll")]
+        static extern IntPtr LoadResource(IntPtr hModule, IntPtr hResource);
     }
 
     [Cmdlet(VerbsCommon.New, "RegistrationFreeCOM")]
