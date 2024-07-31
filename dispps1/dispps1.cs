@@ -16,12 +16,6 @@ namespace RhubarbGeekNzRegistrationFreeCOM
     {
         private readonly static string xmlns = "urn:schemas-microsoft-com:asm.v1";
         private readonly static Dictionary<IntPtr, List<uint>> registrations = new Dictionary<IntPtr, List<uint>>();
-        private static readonly Dictionary<Architecture, string> archDirectories = new Dictionary<Architecture, string>(){
-            {Architecture.Arm, "win-arm"},
-            {Architecture.Arm64, "win-arm64"},
-            {Architecture.X86, "win-x86"},
-            {Architecture.X64, "win-x64"}
-        };
 
         public void OnImport()
         {
