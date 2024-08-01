@@ -12,7 +12,7 @@ using System.Xml;
 
 namespace RhubarbGeekNzRegistrationFreeCOM
 {
-    public class displib : IModuleAssemblyInitializer, IModuleAssemblyCleanup
+    sealed public class ModuleAssembly : IModuleAssemblyInitializer, IModuleAssemblyCleanup
     {
         private readonly static string xmlns = "urn:schemas-microsoft-com:asm.v1";
         private readonly static Dictionary<IntPtr, List<uint>> registrations = new Dictionary<IntPtr, List<uint>>();
@@ -22,7 +22,7 @@ namespace RhubarbGeekNzRegistrationFreeCOM
             Guid IID_IUnknown = new Guid("00000000-0000-0000-C000-000000000046");
             var GetHINSTANCE = typeof(Marshal).GetMethod("GetHINSTANCE");
 
-            foreach (var m in typeof(displib).Assembly.GetLoadedModules())
+            foreach (var m in GetType().Assembly.GetLoadedModules())
             {
                 IntPtr hInstance = (IntPtr)GetHINSTANCE.Invoke(null, new object[] { m });
                 IntPtr hResource = FindResource(hInstance, (IntPtr)2, (IntPtr)24);
@@ -104,19 +104,27 @@ namespace RhubarbGeekNzRegistrationFreeCOM
 
         public void OnRemove(PSModuleInfo psModuleInfo)
         {
-            IntPtr[] modules = registrations.Keys.ToArray();
-
-            foreach (IntPtr hModule in modules)
+            foreach (var kvp in registrations.ToArray())
             {
-                var list = registrations[hModule];
-                registrations.Remove(hModule);
+                IntPtr hModule = kvp.Key;
+                var list = kvp.Value;
 
-                foreach (var dwRegisterClass in list)
+                foreach (var dwRegisterClass in list.ToArray())
                 {
+                    list.Remove(dwRegisterClass);
                     CoRevokeClassObject(dwRegisterClass);
                 }
 
-                CoFreeLibrary(hModule);
+                if (list.Count == 0)
+                {
+                    registrations.Remove(hModule);
+                    IntPtr intPtr = GetProcAddress(hModule, "DllCanUnloadNow");
+                    DllCanUnloadNowDelegate dllCanUnloadNowDelegate = Marshal.GetDelegateForFunctionPointer(intPtr, typeof(DllCanUnloadNowDelegate)) as DllCanUnloadNowDelegate;
+                    if (0 == dllCanUnloadNowDelegate())
+                    {
+                        CoFreeLibrary(hModule);
+                    }
+                }
             }
         }
 
@@ -141,6 +149,9 @@ namespace RhubarbGeekNzRegistrationFreeCOM
             [MarshalAs(UnmanagedType.IUnknown, IidParameterIndex=1)]
             out object ppv
         );
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        public delegate int DllCanUnloadNowDelegate();
 
         [DllImport("ole32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern IntPtr CoLoadLibrary(string lpszLibName, uint dwFlags);
