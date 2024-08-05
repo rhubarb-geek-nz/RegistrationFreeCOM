@@ -72,7 +72,7 @@ namespace RhubarbGeekNzRegistrationFreeCOM
                                     string dllname = file.Attributes["name"].Value;
                                     string arch = RuntimeInformation.ProcessArchitecture.ToString().ToLower();
                                     string path = String.Join(Path.DirectorySeparatorChar.ToString(), new string[] { moduleDir, "win-" + arch, dllname });
-                                    IntPtr hModule = CoLoadLibrary(path, 0);
+                                    IntPtr hModule = LoadLibraryW(path);
 
                                     if (hModule == IntPtr.Zero)
                                     {
@@ -83,7 +83,7 @@ namespace RhubarbGeekNzRegistrationFreeCOM
 
                                     if (registrations.TryGetValue(hModule, out registeredClasses))
                                     {
-                                        CoFreeLibrary(hModule);
+                                        FreeLibrary(hModule);
                                     }
                                     else
                                     {
@@ -134,7 +134,7 @@ namespace RhubarbGeekNzRegistrationFreeCOM
                     if (0 == dllCanUnloadNowDelegate())
                     {
                         registrations.Remove(hModule);
-                        CoFreeLibrary(hModule);
+                        FreeLibrary(hModule);
                     }
                 }
             }
@@ -165,11 +165,11 @@ namespace RhubarbGeekNzRegistrationFreeCOM
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate int DllCanUnloadNowDelegate();
 
-        [DllImport("ole32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        private static extern IntPtr CoLoadLibrary(string lpszLibName, uint dwFlags);
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        private static extern IntPtr LoadLibraryW(string lpszLibName);
 
-        [DllImport("ole32.dll", SetLastError = true)]
-        private static extern int CoFreeLibrary(IntPtr hModule);
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern int FreeLibrary(IntPtr hModule);
 
         [DllImport("kernel32.dll", CharSet = CharSet.Ansi)]
         private static extern IntPtr GetProcAddress(IntPtr hModule, string lpProcName);
