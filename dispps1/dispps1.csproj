@@ -26,13 +26,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="displib.manifest">
-      <Link>RhubarbGeekNz.RegistrationFreeCOM.displib.manifest</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="rhubarb-geek-nz.RegistrationFreeCOM" Version="$(Version)" />
   </ItemGroup>
 

@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-	<assemblyIdentity type="win32" name="RhubarbGeekNz.RegistrationFreeCOM.displib" version="1.0.7.0" />
-	<file name="displib.dll">
-		<comClass clsid="{49ef0168-2765-4932-be4c-e21e0d7a554f}" threadingModel="Both" progid="RhubarbGeekNz.RegistrationFreeCOM" />
-	</file>
-</assembly>

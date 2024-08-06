@@ -1,9 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
 	<assemblyIdentity version="1.0.7.0" name="RhubarbGeekNz.RegistrationFreeCOM.dispps1"/>
-	<dependency>
-		<dependentAssembly>
-			<assemblyIdentity type="win32" name="RhubarbGeekNz.RegistrationFreeCOM.displib" version="1.0.7.0" />
-		</dependentAssembly>
-	</dependency>
+	<file name="displib.dll">
+		<comClass clsid="{49ef0168-2765-4932-be4c-e21e0d7a554f}" threadingModel="Both" progid="RhubarbGeekNz.RegistrationFreeCOM" />
+	</file>
 </assembly>
