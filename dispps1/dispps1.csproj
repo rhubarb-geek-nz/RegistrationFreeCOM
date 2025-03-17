@@ -43,9 +43,7 @@
       <FilesToDelete Include="$(PublishDir)*.pdb" />
     </ItemGroup>
     <Delete Files="@(FilesToDelete)" />
-    <Exec Command="dotnet tool restore" />
-    <Exec Command="dotnet pwsh -ExecutionPolicy Bypass -NoProfile -c &quot;Set-Variable -Name 'ErrorActionPreference' -Value 'Stop'; if ( -not ( Get-Module -ListAvailable -Name '$(Company).PowerShellDataFile' ) ) { Install-Module -Name '$(Company).PowerShellDataFile' -Repository 'PSGallery' -Force }&quot; " />
-    <Exec Command="dotnet pwsh -ExecutionPolicy Bypass -NoProfile -File ./package.ps1 $(ProjectName) $(IntermediateOutputPath) $(OutDir) $(PublishDir)" />
+    <Exec Command="pwsh -ExecutionPolicy Bypass -NoProfile -File ./package.ps1 $(ProjectName) $(IntermediateOutputPath) $(OutDir) $(PublishDir)" />
     <Delete Files="$(OutDir)$(PackageId).psd1" />
   </Target>
 
